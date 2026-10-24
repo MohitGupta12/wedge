@@ -2,8 +2,16 @@ name: Build installers
 
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: 'Attach the macOS and Linux builds to this release as beta downloads (e.g. v0.1.0). Leave empty to skip.'
+        required: false
+        default: ''
   push:
     tags: ['v*']
+
+permissions:
+  contents: write # only used to attach beta builds to a release
 
 jobs:
   build:
@@ -39,6 +47,22 @@ jobs:
         run: npx electron-builder ${{ matrix.target }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Attach to the release as beta
+        if: inputs.release != '' && runner.os != 'Windows'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          mkdir -p upload
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            cp dist/*.dmg "upload/Wedge-$VERSION-macOS-AppleSilicon-beta.dmg"
+          else
+            cp dist/*.AppImage "upload/Wedge-$VERSION-linux-x86_64-beta.AppImage"
+            cp dist/*.deb "upload/wedge_${VERSION}_amd64-beta.deb"
+          fi
+          gh release upload "$TAG" upload/* --clobber
       - uses: actions/upload-artifact@v4
         with:
           name: wedge-${{ runner.os }}

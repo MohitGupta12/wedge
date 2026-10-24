@@ -11,7 +11,8 @@
 
 <p align="center">
   <a href="https://github.com/MohitGupta12/wedge/releases/latest"><b>⬇ Download for Windows</b></a>
-  &nbsp;·&nbsp; <a href="#install-in-a-minute">Install</a>
+  &nbsp;·&nbsp; <a href="#mac-and-linux-beta">Mac &amp; Linux (beta)</a>
+  &nbsp;·&nbsp; <a href="#install-on-windows">Install</a>
   &nbsp;·&nbsp; <a href="#what-it-can-do">What it can do</a>
   &nbsp;·&nbsp; <a href="#faq">FAQ</a>
 </p>
@@ -34,7 +35,7 @@ With Wedge you **hold Alt and click the file**, right where it is, in File Explo
 - 🎯 **Out of your way.** There's no window you need to keep open. Close Settings and it keeps working.
 - 💸 **Free.** No account, no watermark, no limits.
 
-## Install in a minute
+## Install on Windows
 
 1. **Download** `Wedge Setup x.y.z.exe` from the [latest release](https://github.com/MohitGupta12/wedge/releases/latest).
 2. **Run it.** Windows may show *"Windows protected your PC"* because Wedge isn't code-signed yet. Click **More info → Run anyway**.
@@ -45,6 +46,40 @@ With Wedge you **hold Alt and click the file**, right where it is, in File Explo
 That's the whole setup. You can close the Wedge window now.
 
 > **Tip:** Windows 11 tucks new tray icons away. Click the **^** next to the clock and drag the Wedge icon onto the taskbar if you want to see it.
+
+## Mac and Linux (beta)
+
+> ⚠️ **Untested beta.** These builds pass the automated tests on GitHub, but nobody has used them on a real Mac or Linux PC yet. Expect rough edges, and please [report what you find](https://github.com/MohitGupta12/wedge/issues).
+
+### macOS (Apple Silicon: M1 or newer)
+
+1. Download `Wedge-0.1.0-macOS-AppleSilicon-beta.dmg` from the [release page](https://github.com/MohitGupta12/wedge/releases/latest), open it and drag **Wedge** into **Applications**.
+2. Open Wedge. Because it isn't notarized by Apple yet, macOS blocks it the first time. Go to **System Settings → Privacy & Security** and click **Open Anyway**.
+   If macOS says the app *"is damaged"*, run this once in Terminal, then open it again:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/Wedge.app
+   ```
+3. When Wedge asks, allow **Accessibility** access (System Settings → Privacy & Security → Accessibility). It needs that to notice the shortcut.
+4. Hold **Option (⌥)** and click a file in Finder or on the desktop. The first time, macOS asks whether Wedge may control Finder: allow it, so Wedge can see which file you clicked.
+
+Intel Macs aren't supported by this build yet.
+
+### Linux (64-bit, X11)
+
+1. Download one of these from the [release page](https://github.com/MohitGupta12/wedge/releases/latest):
+   - `Wedge-0.1.0-linux-x86_64-beta.AppImage`: make it executable and run it.
+     ```bash
+     chmod +x Wedge-0.1.0-linux-x86_64-beta.AppImage
+     ./Wedge-0.1.0-linux-x86_64-beta.AppImage
+     ```
+   - `wedge_0.1.0_amd64-beta.deb` for Ubuntu, Debian and friends:
+     ```bash
+     sudo apt install ./wedge_0.1.0_amd64-beta.deb
+     ```
+2. Install `xdotool` and `xprop` so Wedge can tell when you're in a file manager (on Ubuntu: `sudo apt install xdotool x11-utils`).
+3. **Alt + drag** a file onto a wedge. Linux file managers don't tell other apps which file was clicked, so on Linux you drag instead of click.
+
+Good to know: many Linux desktops use Alt + drag to move windows. If yours does, pick another shortcut under **Wheel**. On Wayland, Wedge only sees apps that run through XWayland.
 
 ## Use it
 
@@ -105,32 +140,41 @@ Wedge starts small so the wheel stays simple. Add what you need under **Extensio
 
 ## FAQ
 
-**Do I have to open Wedge to use it?**
+### Do I have to open Wedge to use it?
+
 No. Once it's installed it runs in the background (look for the green icon in the tray). Closing the Wedge window doesn't stop it. Turn on **System → Start with Windows** and it's ready every time you log in.
 
-**Is it really offline?**
+### Is it really offline?
+
 Yes. Every conversion runs on your PC with bundled engines (libvips, FFmpeg, MuPDF and friends). There's no account and nothing is uploaded.
 
-**Will it slow my computer down?**
-No. While idle it uses no CPU and roughly 200 MB of memory; the heavy converters only load while a conversion runs.
+### Will it slow my computer down?
 
-**Why Alt?**
-In File Explorer, Shift + click and Ctrl + click change which files are selected. Alt + click doesn't, so the wheel never messes up your selection.
+No. While idle it uses no CPU and roughly 200 MB of memory. The heavy converters only load while a conversion runs.
 
-**Windows says the app is unrecognized.**
-Wedge isn't signed with a paid certificate yet. Click **More info → Run anyway**. All the source code is here if you'd like to check it.
+### Why Alt and not another key?
 
-**Why does the right-click menu need admin approval?**
-Windows 11 only puts apps into its main right-click menu if they register a small app package, and unsigned packages have to be installed for all users. Decline it and you'll still find Wedge under **Show more options**.
+In File Explorer, Shift + click and Ctrl + click change which files are selected. Alt + click doesn't, so the wheel never messes up your selection. You can still pick another shortcut under **Wheel**.
 
-**How do I pause it or quit?**
-Click **Running** at the bottom of the Wedge sidebar to pause (it turns red), or right-click the tray icon for **Pause** and **Quit Wedge**.
+### Windows says the app is unrecognized. Is it safe?
 
-**How do I uninstall?**
-Windows **Settings → Apps → Installed apps → Wedge → Uninstall**. That removes the right-click menu too.
+Wedge isn't signed with a paid certificate yet, so Windows doesn't recognize it. Click **More info → Run anyway**. All the source code is in this repo if you'd like to check it.
 
-**Mac or Linux?**
-The code supports both, but only the Windows build is tested and released for now. See [Build from source](#build-from-source).
+### Why does the right-click menu need admin approval?
+
+Windows 11 only puts apps into its main right-click menu if they register a small app package, and unsigned packages have to be installed for all users. If you decline, you'll still find Wedge under **Show more options**.
+
+### How do I pause it or quit?
+
+Click **Running** at the bottom of the Wedge sidebar to pause (it turns red). Or right-click the tray icon and choose **Pause** or **Quit Wedge**.
+
+### How do I uninstall it?
+
+Open Windows **Settings → Apps → Installed apps → Wedge → Uninstall**. That removes the right-click menu too.
+
+### Does it work on Mac or Linux?
+
+There are **beta** downloads for both on the [release page](https://github.com/MohitGupta12/wedge/releases/latest). They pass the automated tests but haven't been tried on real computers yet, so expect rough edges. See [Mac and Linux (beta)](#mac-and-linux-beta), and please [open an issue](https://github.com/MohitGupta12/wedge/issues) if something breaks.
 
 ---
 
