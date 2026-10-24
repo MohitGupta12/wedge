@@ -155,7 +155,9 @@ async function loudness(file, target, progress) {
     + `:measured_LRA=${clamp(m.input_lra, 0, 99)}:measured_thresh=${clamp(m.input_thresh, -99, 0)}:offset=${clamp(m.target_offset, -99, 99)}`;
   const out = outPath(file, media.sameExt(file), `${target}LUFS`);
   const encode = (filter) => {
-    const args = ['-i', file, '-af', filter];
+    // Some FFmpeg builds (macOS) lose the channel layout inside loudnorm and then
+    // can't pick one for the encoder; naming the channel count fixes that.
+    const args = ['-i', file, '-af', filter, ...(info.audioChannels ? ['-ac', String(info.audioChannels)] : [])];
     if (info.hasVideo) {
       const audio = { webm: ['-c:a', 'libopus'], avi: ['-c:a', 'libmp3lame'], wmv: ['-c:a', 'wmav2'] }[ext(file)] || ['-c:a', 'aac', '-b:a', '256k'];
       args.push('-c:v', 'copy', ...audio);

@@ -132,7 +132,19 @@ async function probe(file) {
     fps: fps ? Number(fps[1]) : 0,
     videoCodec: /Video: (\w+)/.exec(videoLine)?.[1] || '',
     audioCodec: /Audio: (\w+)/.exec(audioLine)?.[1] || '',
+    audioChannels: audioChannels(audioLine),
   };
+}
+
+// "…, 48000 Hz, stereo, fltp" → 2. 0 when there's no audio stream.
+function audioChannels(line) {
+  if (!line) return 0;
+  const layout = /Hz, ([^,]+),/.exec(line)?.[1]?.trim() || '';
+  const named = { mono: 1, stereo: 2, '2.1': 3, quad: 4, '4.0': 4, '5.0': 5, '5.1': 6, '6.1': 7, '7.1': 8 };
+  const key = layout.replace(/\(.*\)$/, '');
+  if (named[key]) return named[key];
+  const n = /(\d+) channels/.exec(layout);
+  return n ? +n[1] : 2;
 }
 
 function run(cmd, args, opts = {}) {
