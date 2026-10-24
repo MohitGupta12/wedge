@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'">
+  <title>Wedge Wheel</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="wheel.css">
+</head>
+<body>
+  <div id="stage">
+    <svg id="wheel" viewBox="0 0 500 500" width="500" height="500" aria-label="Choose a format">
+      <defs>
+        <linearGradient id="hot-fill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" class="hot-a"/>
+          <stop offset="1" class="hot-b"/>
+        </linearGradient>
+      </defs>
+      <g id="ring"></g>
+      <g id="status"></g>
+    </svg>
+    <div id="hub">
+      <div id="thumb">
+        <img id="thumb-img" alt="">
+        <span id="badge"></span>
+        <svg id="check" viewBox="0 0 50 50" aria-hidden="true"><path class="check" d="M15 26 l7 7 l14 -15"/></svg>
+      </div>
+      <div id="center-title"></div>
+      <div id="center-sub"></div>
+      <div id="center-extra"></div>
+    </div>
+    <div id="card" hidden></div>
+  </div>
+  <div id="modes" role="tablist"></div>
+  <script src="forms.js"></script>
+  <script src="wheel.js"></script>
+</body>
+</html>

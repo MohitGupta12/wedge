@@ -1,0 +1,252 @@
+/* Layout is drawn at 500x560 and scaled by the window's zoom factor
+   (Small 60%, Medium 72%, Large 88%), so sizes here are pre-scale. */
+html, body {
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  width: 500px;
+  height: 560px;
+}
+
+#stage {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  transform-origin: 250px 250px;
+}
+
+/* ----- open / close --------------------------------------------------------- */
+
+#stage, #modes {
+  transition: opacity 0.2s ease, transform 0.34s cubic-bezier(0.2, 1.3, 0.35, 1);
+}
+body.closed #stage { opacity: 0; transform: scale(0.62) rotate(-12deg); }
+body.closed #modes { opacity: 0; transform: translateY(-10px); }
+body.closed #stage, body.closed #modes {
+  transition: opacity 0.14s ease-in, transform 0.16s ease-in;
+}
+
+/* Petals fan out from the hub one after another. */
+.petal { transform-origin: 250px 250px; }
+body.entered .petal-in {
+  animation: fan 0.38s cubic-bezier(0.2, 1.25, 0.35, 1) both;
+  animation-delay: calc(var(--i) * 22ms);
+}
+@keyframes fan {
+  from { opacity: 0; transform: scale(0.72) rotate(-14deg); }
+  to { opacity: 1; transform: none; }
+}
+
+body.no-motion #stage, body.no-motion #modes { transition-duration: 0s !important; }
+body.no-motion .petal-in { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  #stage, #modes { transition-duration: 0.08s !important; }
+  .petal-in { animation: none !important; }
+}
+
+/* ----- petals ----------------------------------------------------------------- */
+
+#wheel { position: absolute; inset: 0; overflow: visible; }
+#ring { filter: drop-shadow(0 14px 22px var(--ring-shadow)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08)); }
+
+/* Each petal is drawn inset and stroked in its own color with round joins,
+   which gives every corner the same soft radius. */
+.petal .shape {
+  fill: var(--petal);
+  stroke: var(--petal);
+  stroke-width: 24;
+  stroke-linejoin: round;
+  transition: fill 0.14s ease, stroke 0.14s ease;
+  cursor: pointer;
+}
+/* A 1px hairline: the same shape, 2px wider, drawn behind. */
+.petal .edge {
+  fill: var(--petal-edge);
+  stroke: var(--petal-edge);
+  stroke-width: 27;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+.petal .pop {
+  transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.petal.hot .pop { transform: translate(var(--dx), var(--dy)); }
+.petal.hot .shape { fill: url(#hot-fill); stroke: url(#hot-fill); }
+.petal.hot .edge { stroke: transparent; }
+.hot-a { stop-color: var(--accent); }
+.hot-b { stop-color: var(--accent-strong); }
+
+.petal .type {
+  fill: var(--petal-text);
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.petal .type.small { font-size: 21px; }
+.petal .hint {
+  fill: var(--petal-hint);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.petal.hot .type { fill: var(--accent-ink); }
+.petal.hot .hint { fill: rgba(255, 255, 255, 0.9); }
+
+.drop-ring {
+  fill: none;
+  stroke: var(--text-3);
+  stroke-width: 2.5;
+  stroke-dasharray: 2 12;
+  stroke-linecap: round;
+  opacity: 0.8;
+  animation: turn 8s linear infinite;
+  transform-origin: 250px 250px;
+}
+@keyframes turn { to { transform: rotate(360deg); } }
+
+/* ----- hub -------------------------------------------------------------------- */
+
+#hub {
+  position: absolute;
+  left: 250px;
+  top: 250px;
+  width: 162px;
+  height: 162px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--hub);
+  box-shadow: 0 10px 30px var(--ring-shadow), inset 0 0 0 1px var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 14px;
+  pointer-events: none;
+  transition: box-shadow 0.15s ease;
+}
+#hub.drop { box-shadow: 0 10px 30px var(--ring-shadow), inset 0 0 0 2px var(--accent); }
+
+#thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  margin-bottom: 9px;
+  overflow: hidden;
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+}
+#thumb img { width: 100%; height: 100%; object-fit: cover; display: none; }
+#thumb.has-img img { display: block; }
+#thumb.has-img #badge { display: none; }
+#thumb.has-img { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border); }
+#badge {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+#thumb.hidden { display: none; }
+
+#center-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+}
+#center-sub {
+  margin-top: 4px;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+#center-sub .to { color: var(--accent); font-weight: 650; }
+#center-sub .mono { font-family: var(--mono); font-weight: 700; font-size: 14.5px; }
+#center-extra { margin-top: 6px; }
+.error-msg { font-size: 12px; color: var(--text-2); white-space: normal; max-height: 48px; overflow: hidden; line-height: 1.3; }
+.error-text { color: var(--err); }
+
+.progress-track { fill: none; stroke: var(--border-strong); stroke-width: 5; }
+.progress-bar { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.2s; }
+.spin { animation: turn 0.9s linear infinite; transform-origin: 250px 250px; }
+
+#check { display: none; width: 50px; height: 50px; }
+#hub.done #thumb { background: color-mix(in srgb, var(--ok) 14%, transparent); box-shadow: none; }
+#hub.done #thumb img, #hub.done #badge { display: none; }
+#hub.done #check { display: block; }
+.check { fill: none; stroke: var(--ok); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw 0.3s ease forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* ----- mode switcher (only when Tools & actions are on) ------------------------ */
+
+#modes {
+  position: absolute;
+  top: 508px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--hub);
+  box-shadow: 0 8px 24px var(--ring-shadow), inset 0 0 0 1px var(--border);
+}
+body.closed #modes { transform: translate(-50%, -10px); }
+#modes:empty { display: none; }
+#modes button {
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 8px 15px 8px 9px;
+  font-size: 17px;
+  font-weight: 650;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+#modes button kbd { min-width: 26px; text-align: center; font-size: 13.5px; font-family: var(--mono); }
+#modes button.on { color: var(--accent-ink); background: var(--accent); }
+#modes button.on kbd { background: rgba(255,255,255,.18); color: #fff; border-color: rgba(255,255,255,.3); }
+#modes button.dim { opacity: 0.45; }
+
+/* ----- option card (shown at 100% zoom) -------------------------------------- */
+
+#card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 380px;
+  max-height: 480px;
+  overflow: auto;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--border);
+  padding: 20px 20px 18px;
+  animation: card-in 0.22s cubic-bezier(0.2, 1.25, 0.35, 1);
+}
+@keyframes card-in { from { opacity: 0; transform: translate(-50%, -46%) scale(0.95); } }
+#card h2 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+#card .sub { margin: 3px 0 14px; font-size: 12.5px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#card .hint { font-size: 12px; color: var(--text-3); margin: -6px 0 12px; }
+#card form { display: grid; gap: 12px; }
+#card .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.range-row { display: flex; align-items: center; gap: 10px; }
+.range-row output { font-size: 12px; color: var(--text-2); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }

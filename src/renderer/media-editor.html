@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src file: blob:; font-src 'self'">
+  <title>Video editor · Wedge</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="editor.css">
+  <style>
+    .ed-stage { display: flex; flex-direction: column; }
+    .player { flex: 1; position: relative; min-height: 0; display: grid; place-items: center; padding: 20px; }
+    video { max-width: 100%; max-height: 100%; border-radius: 10px; background: #000; box-shadow: var(--shadow); display: block; }
+    .audio-card { display: none; flex-direction: column; align-items: center; gap: 12px; color: var(--text-2); }
+    .audio-card .disc { width: 140px; height: 140px; border-radius: 32px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+    body.audio .audio-card { display: flex; }
+    body.audio video { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    #crop-box { position: absolute; border: 2px solid #fff; border-radius: 4px; cursor: move; display: none; z-index: 3; }
+    .dim { position: absolute; background: rgba(8, 8, 14, 0.6); pointer-events: none; z-index: 2; display: none; }
+    #crop-box::after { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.35) 1px, transparent 1px); background-size: 33.33% 33.33%; background-position: -1px -1px; pointer-events: none; }
+    .player-clip { position: absolute; overflow: hidden; pointer-events: none; z-index: 2; border-radius: 10px; }
+    .player-clip #crop-box { pointer-events: auto; }
+
+    .transport { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 18px 6px; }
+    .transport .time { font-family: var(--mono); font-size: 12.5px; color: var(--text-2); min-width: 150px; }
+    .play { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; cursor: pointer; }
+    .transport .hint { margin-left: auto; color: var(--text-3); font-size: 12px; }
+    .transport kbd { font-size: 10.5px; }
+    .timeline { flex: none; height: 92px; margin: 4px 18px 18px; position: relative; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); }
+    #tl { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: pointer; }
+    .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-3); }
+  </style>
+</head>
+<body>
+  <header class="ed-top">
+    <div class="ed-title"><span class="kind" id="kind-icon"></span><b id="name"></b><span id="dims"></span></div>
+    <div class="ed-spacer"></div>
+    <div class="ed-actions">
+      <button class="btn" id="snap" title="Save the current frame as PNG"></button>
+      <span class="sep"></span>
+      <button class="btn primary" id="save" title="Export (Ctrl+S)"></button>
+    </div>
+  </header>
+  <div class="ed-body">
+    <main class="ed-stage" id="stage">
+      <div class="player" id="player">
+        <video id="video" preload="auto" playsinline></video>
+        <div class="audio-card"><div class="disc" id="disc"></div><b id="audio-name"></b></div>
+        <div class="player-clip" id="clip"><div class="dim"></div><div class="dim"></div><div class="dim"></div><div class="dim"></div><div id="crop-box" aria-label="Crop area"></div></div>
+        <div class="loading" id="loading">Loading…</div>
+      </div>
+      <div class="transport">
+        <button class="play" id="play" aria-label="Play"></button>
+        <span class="time" id="time">0:00.0 / 0:00.0</span>
+        <button class="btn small" id="set-in" title="Set start to the playhead (I)">Set start</button>
+        <button class="btn small" id="set-out" title="Set end to the playhead (O)">Set end</button>
+        <span class="hint"><kbd>Space</kbd> play · <kbd>I</kbd>/<kbd>O</kbd> start/end · <kbd>←</kbd><kbd>→</kbd> step</span>
+      </div>
+      <div class="timeline"><canvas id="tl" aria-label="Timeline: drag the handles to trim"></canvas></div>
+      <div class="busy" id="busy" hidden><div class="busy-card"><b></b><div class="bar"><i></i></div></div></div>
+    </main>
+    <aside class="ed-panel" id="panel"></aside>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="icons.js"></script>
+  <script src="editor-common.js"></script>
+  <script src="media-editor.js"></script>
+</body>
+</html>

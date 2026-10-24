@@ -1,0 +1,115 @@
+{
+  "name": "wedge",
+  "productName": "Wedge",
+  "version": "0.1.0",
+  "description": "The zero-click offline file converter for Windows, macOS and Linux.",
+  "main": "src/main/main.js",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "icons": "node scripts/make-icons.js",
+    "test": "electron . --self-test",
+    "dist": "npm run icons && electron-builder",
+    "dist:win": "npm run icons && electron-builder --win",
+    "dist:mac": "npm run icons && electron-builder --mac",
+    "dist:linux": "npm run icons && electron-builder --linux",
+    "build:shell": "node scripts/build-shell.js"
+  },
+  "build": {
+    "appId": "app.wedge.converter",
+    "productName": "Wedge",
+    "npmRebuild": false,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "build/*.ico",
+      "build/tray*.png",
+      "scripts/self-test.js",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**",
+      "node_modules/sharp/**",
+      "node_modules/@img/**",
+      "node_modules/uiohook-napi/**",
+      "src/main/native/**",
+      "build/*.ico",
+      "build/*.png"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "extendInfo": {
+        "LSUIElement": false
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    },
+    "extraResources": [
+      {
+        "from": "build/shell/WedgeShell.dll",
+        "to": "shell/WedgeShell.dll"
+      }
+    ],
+    "copyright": "Copyright © 2026 Wedge"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "epub-gen-memory": "^1.1.2",
+    "ffmpeg-static": "^5.3.0",
+    "heic-convert": "^2.1.0",
+    "html-to-docx": "^1.8.0",
+    "mammoth": "^1.13.0",
+    "marked": "^18.1.1",
+    "mupdf": "^1.28.1",
+    "node-unrar-js": "^2.0.2",
+    "pdf-lib": "^1.17.1",
+    "pptxgenjs": "^4.0.1",
+    "sharp": "^0.35.5",
+    "tar": "^7.5.22",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
+    "uiohook-napi": "^1.5.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+  },
+  "devDependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "electron": "^44.9.2",
+    "electron-builder": "^26.15.3"
+  },
+  "author": {
+    "name": "Wedge"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MohitGupta12/wedge.git"
+  },
+  "homepage": "https://github.com/MohitGupta12/wedge"
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'">
+  <title>Wedge</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <aside class="side" id="side">
+    <div class="brand">
+      <img src="../../build/icon.png" alt="" width="30" height="30" onerror="this.style.display='none'">
+      <b id="app-name">Wedge</b>
+    </div>
+    <nav id="nav" aria-label="Sections"></nav>
+    <div class="side-foot">
+      <button type="button" class="run-toggle" id="run-toggle" aria-pressed="true">
+        <span class="dot"></span><span class="run-label" id="run-label">Running</span>
+      </button>
+    </div>
+    <div class="resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" title="Drag to resize · double-click to collapse"></div>
+  </aside>
+  <div class="main-col">
+    <div class="titlebar"></div>
+    <main id="main">
+      <div id="banner" class="banner" hidden></div>
+      <div id="content"></div>
+    </main>
+  </div>
+  <div class="modal-back" id="modal" hidden></div>
+  <script src="icons.js"></script>
+  <script src="settings.js"></script>
+</body>
+</html>

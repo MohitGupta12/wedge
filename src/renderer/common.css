@@ -1,0 +1,142 @@
+/* Geist and Geist Mono (SIL Open Font License, see fonts/OFL-Geist.txt), bundled for offline use. */
+@font-face {
+  font-family: "Geist";
+  src: url("fonts/geist-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: block;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Geist";
+  src: url("fonts/geist-latin-ext-wght-normal.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: block;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("fonts/geist-mono-latin-wght-normal.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-display: block;
+}
+
+:root {
+  /* Wedge green, matching the logo. The user can pick another in Settings. */
+  --accent: #12b76a;
+  --accent-strong: #0a8f51;
+  --accent-soft: rgba(18, 183, 106, 0.13);
+  --accent-ink: #ffffff;
+  --text: #17171c;
+  --text-2: #5f5f6b;
+  --text-3: #9a9aa6;
+  --bg: #f4f4f7;
+  --surface: #ffffff;
+  --surface-2: #f9f9fb;
+  --border: rgba(20, 20, 40, 0.08);
+  --border-strong: rgba(20, 20, 40, 0.15);
+  --ok: #18a058;
+  --err: #e5484d;
+  --petal: #ffffff;
+  --petal-2: #f3f2f8;
+  --petal-text: #15151a;
+  --petal-hint: #5d5c6e;
+  --petal-edge: rgba(20, 20, 40, 0.2);
+  --hub: #ffffff;
+  --ring-shadow: rgba(24, 20, 60, 0.22);
+  --shadow: 0 24px 60px rgba(24, 20, 60, 0.20), 0 2px 8px rgba(24, 20, 60, 0.08);
+  --radius: 12px;
+  --font: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", Roboto, Arial, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #f2f2f6;
+    --text-2: #a3a3b2;
+    --text-3: #6c6c7a;
+    --bg: #111115;
+    --surface: #1b1b21;
+    --surface-2: #22222a;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --accent-soft: rgba(18, 183, 106, 0.2);
+    --petal: #2b2b34;
+    --petal-2: #1c1c23;
+    --petal-text: #ffffff;
+    --petal-hint: #b9b9c7;
+    --petal-edge: rgba(255, 255, 255, 0.22);
+    --hub: #18181e;
+    --ring-shadow: rgba(0, 0, 0, 0.55);
+    --shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select {
+  font: inherit;
+  color: inherit;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-strong); }
+.btn.small { padding: 4px 10px; font-size: 12px; }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: var(--accent-soft); }
+
+.field { display: grid; gap: 5px; }
+.field > span { font-size: 12px; font-weight: 600; color: var(--text-2); }
+.field small { font-size: 11px; color: var(--text-3); }
+.input, select.input {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 13px;
+}
+.input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+input[type="range"] { accent-color: var(--accent); width: 100%; }
+input[type="color"].input { padding: 2px; height: 32px; }
+
+kbd {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 6px;
+  background: var(--surface);
+  color: var(--text-2);
+}
+
+/* Slim scrollbars that match the theme. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); background-clip: content-box; border: 3px solid transparent; }
+::-webkit-scrollbar-button { display: none; }

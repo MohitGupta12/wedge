@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'">
+  <title>PDF editor · Wedge</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="editor.css">
+  <link rel="stylesheet" href="pdf-editor.css">
+</head>
+<body>
+  <header class="ed-top">
+    <button class="btn" id="back" hidden title="Back to all pages (Esc)"></button>
+    <div class="ed-title"><span class="kind" id="kind-icon"></span><b id="name"></b><span id="dims"></span></div>
+    <div class="ed-spacer"></div>
+    <div class="ed-actions">
+      <button class="icon-btn" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo"></button>
+      <button class="icon-btn" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"></button>
+      <span class="sep"></span>
+      <button class="btn primary" id="save" title="Save a copy (Ctrl+S)"></button>
+    </div>
+  </header>
+  <div class="ed-body">
+    <nav class="ed-tools" id="tools" aria-label="Annotation tools" hidden></nav>
+    <main class="ed-stage" id="stage">
+      <div class="toolbar" id="toolbar"></div>
+      <div class="grid" id="grid"><div class="loading">Loading pages…</div></div>
+    </main>
+    <main class="ed-stage page-stage" id="page-stage" hidden>
+      <div class="scroller" id="scroller">
+        <div class="sheet" id="sheet">
+          <img id="page-img" alt="" draggable="false">
+          <div class="layer" id="layer"></div>
+        </div>
+      </div>
+      <div class="pager">
+        <button class="icon-btn" id="prev" aria-label="Previous page" title="Previous page (←)"></button>
+        <span id="page-label"></span>
+        <button class="icon-btn" id="next" aria-label="Next page" title="Next page (→)"></button>
+      </div>
+    </main>
+    <aside class="ed-panel" id="panel" hidden></aside>
+    <div class="busy" id="busy" hidden><div class="busy-card"><b></b><div class="bar"><i></i></div></div></div>
+  </div>
+  <div class="modal-back" id="sig-modal" hidden></div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="icons.js"></script>
+  <script src="editor-common.js"></script>
+  <script src="pdf-editor.js"></script>
+</body>
+</html>

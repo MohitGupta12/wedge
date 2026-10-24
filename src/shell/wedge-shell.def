@@ -1,0 +1,4 @@
+LIBRARY WedgeShell
+EXPORTS
+  DllGetClassObject PRIVATE
+  DllCanUnloadNow PRIVATE
