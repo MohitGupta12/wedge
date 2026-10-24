@@ -100,7 +100,10 @@ function ffmpeg(args, { onProgress, duration } = {}) {
       if (code === 0) resolve(stderr);
       else {
         const lines = stderr.trim().split('\n').filter((l) => !/^\s*(frame|size)=/.test(l));
-        reject(new Error(`FFmpeg failed: ${lines.slice(-3).join(' ').trim()}`));
+        // Lines like "[Parsed_loudnorm_0 @ ...] Value out of range" name the real cause;
+        // the last lines are often just "Conversion failed!".
+        const cause = lines.filter((l) => /^\[[^\]]+ @ /.test(l)).slice(-1);
+        reject(new Error(`FFmpeg failed: ${[...cause, ...lines.slice(-3)].join(' ').trim()}`));
       }
     });
   });

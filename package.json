@@ -69,7 +69,8 @@
         "deb"
       ],
       "category": "Utility",
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "maintainer": "Wedge <70692495+MohitGupta12@users.noreply.github.com>"
     },
     "extraResources": [
       {

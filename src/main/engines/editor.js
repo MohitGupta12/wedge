@@ -148,18 +148,32 @@ async function loudness(file, target, progress) {
   const json = /\{[^{}]*"input_i"[^{}]*\}/.exec(report);
   if (!json) throw new Error('Could not measure loudness');
   const m = JSON.parse(json[0]);
-  // loudnorm works at 192 kHz internally, so resample back to 48 kHz.
-  const filter = `loudnorm=${spec}:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true,aresample=48000`;
+  // Measurements outside loudnorm's accepted ranges (silence reports -inf, for
+  // example) make the second pass fail, so clamp them.
+  const clamp = (v, lo, hi) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : lo);
+  const measured = `measured_I=${clamp(m.input_i, -99, 0)}:measured_TP=${clamp(m.input_tp, -99, 99)}`
+    + `:measured_LRA=${clamp(m.input_lra, 0, 99)}:measured_thresh=${clamp(m.input_thresh, -99, 0)}:offset=${clamp(m.target_offset, -99, 99)}`;
   const out = outPath(file, media.sameExt(file), `${target}LUFS`);
-  const args = ['-i', file, '-af', filter];
-  if (info.hasVideo) {
-    const audio = { webm: ['-c:a', 'libopus'], avi: ['-c:a', 'libmp3lame'], wmv: ['-c:a', 'wmav2'] }[ext(file)] || ['-c:a', 'aac', '-b:a', '256k'];
-    args.push('-c:v', 'copy', ...audio);
-  } else {
-    args.push(...media.codecFor(file));
+  const encode = (filter) => {
+    const args = ['-i', file, '-af', filter];
+    if (info.hasVideo) {
+      const audio = { webm: ['-c:a', 'libopus'], avi: ['-c:a', 'libmp3lame'], wmv: ['-c:a', 'wmav2'] }[ext(file)] || ['-c:a', 'aac', '-b:a', '256k'];
+      args.push('-c:v', 'copy', ...audio);
+    } else {
+      args.push(...media.codecFor(file));
+    }
+    args.push('-y', out);
+    return ffmpeg(args, { onProgress: (p) => progress?.(0.5 + p / 2), duration: info.duration });
+  };
+  // loudnorm works at 192 kHz internally, so resample back to 48 kHz.
+  try {
+    await encode(`loudnorm=${spec}:${measured}:linear=true,aresample=48000`);
+  } catch (err) {
+    // Some FFmpeg builds reject the measured (linear) mode; the one-pass mode still
+    // reaches the target, just with gentle dynamic adjustment.
+    console.warn(`Two-pass loudness failed, using one pass: ${err.message}`);
+    await encode(`loudnorm=${spec},aresample=48000`);
   }
-  args.push(out);
-  await ffmpeg(args, { onProgress: (p) => progress?.(0.5 + p / 2), duration: info.duration });
   return [out];
 }
 
