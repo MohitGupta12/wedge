@@ -1,0 +1,50 @@
+name: Build installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: --win
+          - os: macos-latest
+            target: --mac
+          - os: ubuntu-latest
+            target: --linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Linux libraries for the global input hook
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxtst6 libxkbcommon-x11-0 xvfb
+      - run: npm ci
+      - run: npm run icons
+      - name: Self-test
+        if: runner.os != 'Linux'
+        run: npx electron . --self-test
+      - name: Self-test (headless)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npx electron . --self-test --no-sandbox
+      - name: Package
+        run: npx electron-builder ${{ matrix.target }} --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wedge-${{ runner.os }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.deb
+          if-no-files-found: ignore

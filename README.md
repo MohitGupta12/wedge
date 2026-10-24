@@ -145,7 +145,8 @@ npm test           # end-to-end self-test: converts generated fixtures through e
 npm run dist:win   # Windows installer (dist:mac / dist:linux on those systems)
 ```
 
-Each platform has to be built on that OS.
+Each platform has to be built on that OS. Pushing a `v*` tag (or running the **Build installers**
+workflow from the Actions tab) builds and self-tests Wedge on Windows, macOS and Linux runners.
 
 The native Windows pieces (the right-click handler `build/shell/WedgeShell.dll` and the shell helper
 `src/main/native/wedge-helper.exe`) are checked in. To rebuild them, install
