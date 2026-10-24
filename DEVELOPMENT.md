@@ -26,7 +26,27 @@ PowerPoint → PDF and to open DOC, ODT, RTF, PPT, ODP and Keynote files.
 1. Bump `version` in `package.json`, build the Windows installer with `npm run dist:win`, and create a GitHub release
    (for example `v0.2.0`) with `dist/Wedge Setup x.y.z.exe` attached.
 2. In the **Actions** tab, run **Build installers** and type the release tag. The macOS and Linux builds are
-   attached to that release as beta downloads.
+   attached to that release as beta downloads. Once SignPath signing is set up, approve the signing request
+   in SignPath and the signed Windows installer replaces the one from step 1.
+
+## Windows code signing (SignPath)
+
+Windows installers are signed for free through the [SignPath Foundation](https://signpath.org/) program
+for open-source projects. The **Build installers** workflow does it automatically once these are set:
+
+| Where (GitHub repo → Settings → Secrets and variables → Actions) | Name | Value |
+| --- | --- | --- |
+| Secrets | `SIGNPATH_API_TOKEN` | API token of a SignPath user with the *submitter* role |
+| Variables | `SIGNPATH_ORGANIZATION_ID` | Your SignPath organization ID |
+| Variables (optional) | `SIGNPATH_PROJECT_SLUG` | Project slug, if it isn't `wedge` |
+| Variables (optional) | `SIGNPATH_SIGNING_POLICY_SLUG` | Signing policy slug, if it isn't `release-signing` |
+
+In SignPath, the project uses the artifact configuration in [.signpath/artifact-configuration.xml](.signpath/artifact-configuration.xml),
+the predefined GitHub.com trusted build system, and the SignPath GitHub App installed on this repository.
+Each signing request waits for an approver, then the signed installer replaces the unsigned one and, when
+the workflow is run with a release tag, is attached to that release.
+
+Without `SIGNPATH_API_TOKEN` the signing steps are skipped and the build stays unsigned.
 
 ## Platform notes
 

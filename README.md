@@ -111,6 +111,17 @@ Right next to the original, with the new extension (`photo.jpg` → `photo.png`)
 
 Wedge is **free and open source**. You can use it for anything, for free. If you change the code and share your version, you have to share your code too. That's the [AGPL-3.0 license](LICENSE), required by the PDF and video tools Wedge uses.
 
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/). *(Application pending: Windows releases will be signed once it's approved.)*
+
+- **Committers and reviewers:** [MohitGupta12](https://github.com/MohitGupta12)
+- **Approvers:** [MohitGupta12](https://github.com/MohitGupta12)
+
+Only builds made by GitHub Actions from this repository's source code are signed, and every signing request is approved by hand.
+
+**Privacy:** This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. All conversions run on your computer.
+
 ---
 
 <sub>Want to build Wedge yourself or help out? See the [developer guide](DEVELOPMENT.md). Wedge is an independent project inspired by Tangerine for Mac and isn't affiliated with it.</sub>

@@ -4,14 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Attach the macOS and Linux builds to this release as beta downloads (e.g. v0.1.0). Leave empty to skip.'
+        description: 'Attach the builds to this release (e.g. v0.1.0): macOS and Linux as beta, Windows once it is signed. Leave empty to skip.'
         required: false
         default: ''
   push:
     tags: ['v*']
 
 permissions:
-  contents: write # only used to attach beta builds to a release
+  contents: write # attach builds to a release
+  actions: read # lets SignPath fetch the unsigned installer artifact
 
 jobs:
   build:
@@ -26,6 +27,9 @@ jobs:
           - os: ubuntu-latest
             target: --linux
     runs-on: ${{ matrix.os }}
+    env:
+      # Set once SignPath approves Wedge (see DEVELOPMENT.md). Without it, Windows builds stay unsigned.
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,8 +51,38 @@ jobs:
         run: npx electron-builder ${{ matrix.target }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
-      - name: Attach to the release as beta
-        if: inputs.release != '' && runner.os != 'Windows'
+
+      # ----- Windows code signing through SignPath Foundation -----
+      - name: Upload the unsigned installer for signing
+        id: unsigned
+        if: runner.os == 'Windows' && env.SIGNPATH_API_TOKEN != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: wedge-windows-unsigned
+          path: dist/Wedge Setup *.exe
+          if-no-files-found: error
+      - name: Sign the installer with SignPath
+        if: steps.unsigned.outcome == 'success'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG || 'wedge' }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          # Release signing waits for a person to approve the request in SignPath.
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: dist/signed
+      - name: Use the signed installer
+        if: steps.unsigned.outcome == 'success'
+        shell: bash
+        run: |
+          rm -f dist/Wedge\ Setup\ *.exe
+          mv dist/signed/*.exe dist/
+
+      - name: Attach to the release
+        if: inputs.release != '' && (runner.os != 'Windows' || steps.unsigned.outcome == 'success')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -56,7 +90,9 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           mkdir -p upload
-          if [ "$RUNNER_OS" = "macOS" ]; then
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            cp dist/Wedge\ Setup\ *.exe "upload/Wedge.Setup.$VERSION.exe"
+          elif [ "$RUNNER_OS" = "macOS" ]; then
             cp dist/*.dmg "upload/Wedge-$VERSION-macOS-AppleSilicon-beta.dmg"
           else
             cp dist/*.AppImage "upload/Wedge-$VERSION-linux-x86_64-beta.AppImage"
