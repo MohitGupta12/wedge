@@ -10,13 +10,13 @@ const isMac = process.platform === 'darwin';
 const DEFAULT_TRIGGER = { mods: ['alt'], key: null };
 
 // Bumped when a default changes in a way existing settings should pick up.
-const SETTINGS_VERSION = 5;
+const SETTINGS_VERSION = 6;
 
 const DEFAULTS = {
   gestureEnabled: true,
   trigger: DEFAULT_TRIGGER,
   fileManagerOnly: true, // only react inside Explorer / the desktop / Finder
-  multiSelect: 'pressed', // 'pressed' | 'all': which files a press converts when several are selected
+  multiSelect: 'all', // 'pressed' | 'all': which files a press converts when several are selected
   pauseShortcut: '', // Electron accelerator that toggles Wedge on/off
   // Installed extensions (all bundled; "installing" switches a pack on).
   extensions: { 'image-editor': true, 'video-editor': true, 'pdf-editor': true },
@@ -35,7 +35,7 @@ const DEFAULTS = {
   closeAfter: 'result', // 'result' (show a check) | 'instant'
   theme: 'system', // 'system' | 'light' | 'dark'
   accent: '#12b76a', // Wedge green, the logo's color
-  outputMode: 'beside', // 'beside' | 'folder'
+  outputMode: 'beside', // 'beside' | 'folder' | 'ask' (a Save dialog each time, like a browser download)
   outputFolder: '',
   revealAfter: false,
   notify: true,
@@ -89,6 +89,10 @@ function load() {
       // v5: Alt + click replaced Shift+Alt, which also range-selected files.
       const t = cache.trigger;
       if (t.mods.length === 2 && t.mods.includes('alt') && t.mods.includes('shift') && !t.key) cache.trigger = DEFAULT_TRIGGER;
+    }
+    if (!(saved.version >= 6)) {
+      // v6: Alt + click on a file inside a selection converts the whole selection.
+      cache.multiSelect = 'all';
     }
     cache.version = SETTINGS_VERSION;
   } catch {

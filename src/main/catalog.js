@@ -7,6 +7,7 @@ const image = require('./engines/image');
 const media = require('./engines/media');
 const pdf = require('./engines/pdf');
 const docs = require('./engines/docs');
+const pdfDocx = require('./engines/pdf-docx');
 const sheets = require('./engines/sheets');
 const archive = require('./engines/archive');
 const subtitles = require('./engines/subtitles');
@@ -117,7 +118,7 @@ for (const t of ['mp3', 'm4a', 'wav', 'flac', 'ogg', 'opus', 'aiff', 'wma']) {
 // PDF
 convertOp('pdf', 'png', (f, _o, c) => pdf.toImages(f, 'png', c.settings, c.progress));
 convertOp('pdf', 'jpg', (f, _o, c) => pdf.toImages(f, 'jpg', c.settings, c.progress));
-convertOp('pdf', 'docx', (f) => docs.convert(f, 'docx'));
+convertOp('pdf', 'docx', (f) => pdfDocx.convert(f));
 convertOp('pdf', 'txt', (f) => pdf.toText(f));
 convertOp('pdf', 'md', (f) => docs.convert(f, 'md'));
 convertOp('pdf', 'html', (f) => docs.convert(f, 'html'));

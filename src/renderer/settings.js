@@ -476,7 +476,7 @@ function system() {
         select(settings.multiSelect, [['pressed', 'Just the pressed file'], ['all', 'All selected files']], (v) => save({ multiSelect: v }), 'Several files selected'))),
     h('div', { class: 'group' },
       h('h2', {}, 'Saving'),
-      row('Save new files', 'Never overwrites: photo (1).jpg', select(settings.outputMode, [['beside', 'Next to the original'], ['folder', 'In one folder']], (v) => save({ outputMode: v }), 'Save new files')),
+      row('Save new files', settings.outputMode === 'ask' ? 'A Save dialog opens after each conversion.' : 'Never overwrites: photo (1).jpg', select(settings.outputMode, [['beside', 'Next to the original'], ['folder', 'In one folder'], ['ask', 'Ask me every time']], (v) => save({ outputMode: v }), 'Save new files')),
       settings.outputMode === 'folder' ? row('Folder', null, [folderLabel, chooseFolder]) : null,
       row('Image quality', 'JPG, WebP, AVIF.', select(String(settings.imageQuality), [['75', '75'], ['85', '85'], ['90', '90'], ['95', '95'], ['100', '100']], (v) => save({ imageQuality: Number(v) }), 'Image quality')),
       row('Show in folder when done', null, toggle('revealAfter', 'Show in folder when done')),

@@ -4,6 +4,7 @@ const fsp = require('fs/promises');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
+const { AsyncLocalStorage } = require('async_hooks');
 
 // Native binaries live outside the asar archive once packaged.
 function unpacked(p) {
@@ -25,13 +26,20 @@ function setOutputDirResolver(fn) {
   outputDirResolver = fn;
 }
 
+// While a job runs inside withOutputDir(), everything it writes goes to that folder
+// (used to stage files before asking the user where to save them).
+const outputOverride = new AsyncLocalStorage();
+function withOutputDir(dir, fn) {
+  return outputOverride.run(dir, fn);
+}
+
 function outDir(input) {
-  return outputDirResolver(input);
+  return outputOverride.getStore() || outputDirResolver(input);
 }
 
 // Returns a free path next to the input (or in the configured output folder).
 function outPath(input, newExt, suffix = '') {
-  const dir = outputDirResolver(input);
+  const dir = outDir(input);
   return uniquePath(path.join(dir, `${base(input)}${suffix}.${newExt}`));
 }
 
@@ -198,5 +206,5 @@ function lazy(name) {
 
 module.exports = {
   lazy, FFMPEG, unpacked, ext, base, outDir, outPath, uniquePath, uniqueDir, tempDir, withTemp,
-  parseTime, ffmpeg, probe, run, escapeHtml, parseRanges, setOutputDirResolver,
+  parseTime, ffmpeg, probe, run, escapeHtml, parseRanges, setOutputDirResolver, withOutputDir,
 };

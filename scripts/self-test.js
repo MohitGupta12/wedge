@@ -167,6 +167,29 @@ async function editorChecks(f) {
       const doc = m.Document.openDocument(fs.readFileSync(out), 'application/pdf');
       return doc.countPages() === 2 && doc.loadPage(0).search('Signed by Wedge').length > 0 && doc.loadPage(1).search('Line two').length > 0;
     }],
+    ['pdf to word keeps the page layout', async () => {
+      const [out] = await require('../src/main/engines/pdf-docx').convert(f('notes.pdf'));
+      const xml = new (require('adm-zip'))(out).readAsText('word/document.xml');
+      const m = await import('mupdf');
+      const pages = m.Document.openDocument(fs.readFileSync(f('notes.pdf')), 'application/pdf').countPages();
+      // One Word section per PDF page, with sizes and fonts carried over.
+      return (xml.match(/<w:sectPr/g) || []).length === pages && /<w:sz w:val=/.test(xml) && /<w:rFonts /.test(xml);
+    }],
+    ['ask where to save: staged, then moved', async () => {
+      const asking = new Jobs(() => ({ outputMode: 'ask', imageQuality: 90 }));
+      let staged = [];
+      asking.askWhereToSave = async (_job, outs) => {
+        staged = outs;
+        const dest = f('asked-photo.png');
+        await fsp.rename(outs[0], dest);
+        return [dest];
+      };
+      const saved = await asking.run('convert:image:png', [f('photo.jpg')]);
+      asking.askWhereToSave = async () => null; // cancelled
+      const cancelled = await asking.run('convert:image:png', [f('photo.jpg')]);
+      return staged[0]?.includes('wedge-save-') && saved.outputs[0] === f('asked-photo.png') && fs.existsSync(saved.outputs[0])
+        && cancelled.outputs.length === 0 && cancelled.errors[0]?.message === 'Not saved';
+    }],
   ];
   let failed = 0;
   for (const [label, fn] of checks) {

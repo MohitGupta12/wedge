@@ -301,4 +301,4 @@ async function hasText(file) {
   return false;
 }
 
-module.exports = { toImages, toHtml, toText, toPptx, toXlsx, renderToPdf, hasText, merge, split, extract, removePages, rotate, compress, protect, organize, metadata, pageCount };
+module.exports = { open, toImages, toHtml, toText, toPptx, toXlsx, renderToPdf, hasText, merge, split, extract, removePages, rotate, compress, protect, organize, metadata, pageCount };

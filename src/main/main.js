@@ -46,7 +46,8 @@ const ctx = shellContext.create();
 const jobs = new Jobs(() => settings.load());
 
 // Pass our own arguments along: Chromium reorders the argv the running instance sees.
-if (!app.requestSingleInstanceLock({ argv: process.argv })) {
+// The self-test runs alongside an installed Wedge, so it skips the one-instance rule.
+if (!process.argv.includes('--self-test') && !app.requestSingleInstanceLock({ argv: process.argv })) {
   app.quit();
   return;
 }
@@ -516,7 +517,9 @@ function applyShortcuts() {
 }
 
 // Files the press should act on, or [] when we can't tell.
-async function targetFiles(info) {
+// earlySelection: the selection read right at the press. A quick click collapses
+// Explorer's selection to the clicked file on release, so read it before that.
+async function targetFiles(info, earlySelection = []) {
   const focused = await ctx.focused(info);
   const { trigger, multiSelect } = settings.load();
   // Shift and Ctrl also change Explorer's selection (range / toggle). Undo that,
@@ -526,8 +529,12 @@ async function targetFiles(info) {
     return focused;
   }
   if (!focused.length || multiSelect !== 'all') return focused;
-  const selected = await ctx.selected(info);
-  return selected.includes(focused[0]) ? selected : focused;
+  let selected = earlySelection.includes(focused[0]) ? earlySelection : await ctx.selected(info);
+  if (!selected.includes(focused[0])) return focused;
+  // Mixed selections convert the files of the same kind as the one pressed.
+  const kind = catalog.describe(focused[0]).cat;
+  selected = selected.filter((p) => catalog.describe(p).cat === kind);
+  return selected.length ? selected : focused;
 }
 
 gesture.on('press', async () => {
@@ -546,8 +553,9 @@ gesture.on('press', async () => {
   }
   let files = [];
   if (info.onItem || isMac) {
+    const early = info.onItem && st.multiSelect === 'all' ? ctx.selected(info).catch(() => []) : Promise.resolve([]);
     await new Promise((r) => setTimeout(r, FOCUS_DELAY));
-    files = await targetFiles(info);
+    files = await targetFiles(info, await early);
     if (session !== s) return;
     // On Windows we know a file item was pressed, so failing to resolve it means
     // it isn't a real file (e.g. "This PC"). Elsewhere fall back to the drag's type.
@@ -639,6 +647,50 @@ function addRecent(label, outputs) {
   recent.splice(12);
   settingsWin?.webContents.send('recent:changed', recent);
 }
+// "Ask where to save": a Save As dialog for one file (like a browser download), or
+// a folder picker when a conversion makes several files. Returns the final paths,
+// or null when the user cancels.
+async function moveInto(src, dest) {
+  await fsp.rm(dest, { recursive: true, force: true }); // the Save dialog already confirmed replacing it
+  try {
+    await fsp.rename(src, dest);
+  } catch {
+    await fsp.cp(src, dest, { recursive: true }); // another drive
+    await fsp.rm(src, { recursive: true, force: true });
+  }
+}
+
+jobs.askWhereToSave = async (job, staged) => {
+  const startDir = path.dirname(job.files[0]); // start where the original file is
+  app.focus({ steal: true }); // the dialog must come up in front of the file manager
+  if (staged.length === 1 && !(await fsp.stat(staged[0])).isDirectory()) {
+    const name = path.basename(staged[0]);
+    const extension = path.extname(name).slice(1);
+    const res = await dialog.showSaveDialog({
+      title: `Save ${name}`,
+      defaultPath: path.join(startDir, name),
+      filters: extension ? [{ name: `${extension.toUpperCase()} file`, extensions: [extension] }] : [],
+    });
+    if (res.canceled || !res.filePath) return null;
+    await moveInto(staged[0], res.filePath);
+    return [res.filePath];
+  }
+  const res = await dialog.showOpenDialog({
+    title: `Choose where to save ${staged.length === 1 ? path.basename(staged[0]) : `${staged.length} files`}`,
+    defaultPath: startDir,
+    buttonLabel: 'Save here',
+    properties: ['openDirectory', 'createDirectory'],
+  });
+  if (res.canceled || !res.filePaths[0]) return null;
+  const saved = [];
+  for (const p of staged) {
+    const dest = util.uniquePath(path.join(res.filePaths[0], path.basename(p)));
+    await moveInto(p, dest);
+    saved.push(dest);
+  }
+  return saved;
+};
+
 jobs.on('finished', (job) => {
   addRecent(job.label, job.outputs);
   const s = settings.load();
